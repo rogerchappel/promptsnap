@@ -12,7 +12,7 @@ export const defaultConfig: PromptSnapConfig = {
   redactions: [
     { name: "env-assignment-secret", pattern: "(?im)^([A-Z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD)[A-Z0-9_]*=).+$", replacement: "$1[REDACTED]" },
     { name: "bearer-token", pattern: "(?i)Bearer\\s+[A-Za-z0-9._~+/=-]{16,}", replacement: "Bearer [REDACTED]" },
-    { name: "user-home-path", pattern: "(?g)/Users/[^/\\s]+", replacement: "~" }
+    { name: "user-home-path", pattern: "/Users/[^/\\s]+", replacement: "~" }
   ],
   tokenBudget: {
     maxTokens: 8000,
