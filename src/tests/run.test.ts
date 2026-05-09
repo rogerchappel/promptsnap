@@ -5,9 +5,10 @@ import { join } from "node:path";
 import test from "node:test";
 import { runSnapshots } from "../run.js";
 
-function fixture(): string {
+function fixture(withSnapshot = false): string {
   const dir = mkdtempSync(join(tmpdir(), "promptsnap-"));
   cpSync(new URL("../../fixtures/basic/", import.meta.url), dir, { recursive: true });
+  if (!withSnapshot) rmSync(join(dir, "__snapshots__"), { recursive: true, force: true });
   return dir;
 }
 
