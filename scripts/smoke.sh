@@ -6,8 +6,11 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 cp -R "$ROOT/fixtures/basic/." "$TMP/"
-node "$ROOT/dist/cli.js" update "$TMP/prompts" --format json > "$TMP/update.json"
-node "$ROOT/dist/cli.js" check "$TMP/prompts" --format markdown > "$TMP/check.md"
+(
+  cd "$TMP"
+  node "$ROOT/dist/cli.js" update prompts --format json > update.json
+  node "$ROOT/dist/cli.js" check prompts --format markdown > check.md
+)
 
 grep -q '"ok": true' "$TMP/update.json"
 grep -q '# promptsnap check passed' "$TMP/check.md"
