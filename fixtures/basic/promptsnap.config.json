@@ -1,0 +1,21 @@
+{
+  "include": ["prompts/**/*.md"],
+  "exclude": ["__snapshots__/**", "node_modules/**", ".git/**", "dist/**"],
+  "snapshotDir": "__snapshots__",
+  "normalizers": ["line-endings", "trim-trailing-whitespace", "final-newline"],
+  "redactions": [
+    {
+      "name": "env-secret",
+      "pattern": "(?im)^([A-Z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD)[A-Z0-9_]*=).+$",
+      "replacement": "$1[REDACTED]"
+    },
+    {
+      "name": "home-path",
+      "pattern": "/Users/[^/\\s]+",
+      "replacement": "~"
+    }
+  ],
+  "tokenBudget": {
+    "maxTokens": 200
+  }
+}
