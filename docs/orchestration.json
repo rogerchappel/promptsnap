@@ -1,0 +1,19 @@
+{
+  "name": "promptsnap",
+  "version": 1,
+  "localFirst": true,
+  "networkPolicy": "none-at-runtime",
+  "commands": {
+    "build": "npm run build",
+    "check": "npm run check",
+    "test": "npm test",
+    "smoke": "npm run smoke",
+    "validate": "bash scripts/validate.sh"
+  },
+  "snapshots": {
+    "directory": "__snapshots__",
+    "updateCommand": "promptsnap update",
+    "checkCommand": "promptsnap check --format markdown"
+  },
+  "requiredBeforeReview": ["npm run release:check", "bash scripts/validate.sh"]
+}
