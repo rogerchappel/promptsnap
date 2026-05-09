@@ -26,6 +26,17 @@ test("update creates snapshots and check passes", () => {
   }
 });
 
+test("check passes against committed fixture snapshot", () => {
+  const root = fixture(true);
+  try {
+    const check = runSnapshots(root, "check");
+    assert.equal(check.ok, true);
+    assert.equal(check.matched, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("check reports changed prompts", () => {
   const root = fixture();
   try {
