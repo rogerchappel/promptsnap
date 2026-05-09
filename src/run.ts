@@ -51,7 +51,8 @@ export function runSnapshots(root: string, command: RunSummary["command"], input
     }
     if (command === "update") {
       writeSnapshot(target, record);
-      push(summary, { source: source.relativePath, snapshotPath: displayPath, status: existing ? "matched" : "created", tokens: prepared.tokens });
+      const status = !existing ? "created" : existing.content === prepared.content && existing.sha256 === record.sha256 ? "matched" : "changed";
+      push(summary, { source: source.relativePath, snapshotPath: displayPath, status, tokens: prepared.tokens });
       continue;
     }
     if (!existing) {
