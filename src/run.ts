@@ -65,6 +65,6 @@ export function runSnapshots(root: string, command: RunSummary["command"], input
       push(summary, { source: source.relativePath, snapshotPath: displayPath, status: "changed", tokens: prepared.tokens, diff: unifiedDiff(source.relativePath, existing.content, prepared.content) });
     }
   }
-  summary.ok = summary.changed === 0 && summary.missing === 0 && summary.overBudget === 0;
+  summary.ok = command === "update" ? summary.overBudget === 0 : summary.changed === 0 && summary.missing === 0 && summary.overBudget === 0;
   return summary;
 }
