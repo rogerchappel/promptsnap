@@ -26,6 +26,7 @@ function parse(argv: string[]): Parsed {
     else if (arg === "--format") parsed.format = readFormat(args.shift());
     else if (arg.startsWith("--format=")) parsed.format = readFormat(arg.slice("--format=".length));
     else if (arg === "--accept") continue;
+    else if (arg.startsWith("--")) throw new Error(`Unknown option: ${arg}`);
     else parsed.inputs.push(arg);
   }
   return parsed;
