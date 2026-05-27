@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -46,6 +46,24 @@ test("check reports changed prompts", () => {
     assert.equal(check.ok, false);
     assert.equal(check.changed, 1);
     assert.match(check.results[0]?.diff ?? "", /Changed behavior/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("update redacts secret-like prompt content before writing snapshots", () => {
+  const root = fixture();
+  try {
+    writeFileSync(
+      join(root, "prompts", "system.prompt.md"),
+      "# System prompt\n\nAPI_TOKEN=sk_test_1234567890abcdef\n",
+      "utf8"
+    );
+    const update = runSnapshots(root, "update");
+    assert.equal(update.ok, true);
+    const snapshot = readFileSync(join(root, "__snapshots__", "prompts__system.prompt.md.snap.md"), "utf8");
+    assert.match(snapshot, /API_TOKEN=\[REDACTED\]/);
+    assert.doesNotMatch(snapshot, /sk_test_1234567890abcdef/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
