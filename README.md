@@ -99,3 +99,14 @@ npm run release:check
 ```
 
 The package smoke uses `npm pack --dry-run` so the published file list can be reviewed without publishing.
+
+## Development
+
+Run the same local checks that protect the package before opening a release or pull request:
+
+- `npm run build`
+- `npm test`
+- `npm run check`
+- `npm run smoke`
+- `npm run package:smoke`
+- `npm run release:check`
