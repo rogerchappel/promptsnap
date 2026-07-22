@@ -4,7 +4,19 @@ import { sha256 } from "./hash.js";
 import type { SnapshotRecord } from "./types.js";
 
 export function snapshotFileName(relativePath: string): string {
-  return `${relativePath.replace(/[^A-Za-z0-9._-]+/g, "__")}.snap.md`;
+  let encoded = "";
+  for (const character of relativePath) {
+    if (/[A-Za-z0-9.-]/.test(character)) {
+      encoded += character;
+    } else if (character === "/") {
+      encoded += "__";
+    } else {
+      for (const byte of Buffer.from(character, "utf8")) {
+        encoded += `_${byte.toString(16).padStart(2, "0")}`;
+      }
+    }
+  }
+  return `${encoded}.snap.md`;
 }
 
 export function snapshotPath(root: string, snapshotDir: string, relativePath: string): string {

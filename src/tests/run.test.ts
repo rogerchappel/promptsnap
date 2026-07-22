@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -21,6 +21,27 @@ test("update creates snapshots and check passes", () => {
     const check = runSnapshots(root, "check");
     assert.equal(check.ok, true);
     assert.equal(check.matched, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("update preserves snapshots for source paths that previously collided", () => {
+  const root = fixture();
+  try {
+    rmSync(join(root, "prompts", "system.prompt.md"));
+    mkdirSync(join(root, "prompts", "a"));
+    writeFileSync(join(root, "prompts", "a", "b.md"), "nested\n", "utf8");
+    writeFileSync(join(root, "prompts", "a__b.md"), "underscores\n", "utf8");
+
+    const update = runSnapshots(root, "update");
+    assert.equal(update.ok, true);
+    assert.equal(update.created, 2);
+    assert.equal(new Set(update.results.map((result) => result.snapshotPath)).size, 2);
+
+    const check = runSnapshots(root, "check");
+    assert.equal(check.ok, true);
+    assert.equal(check.matched, 2);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

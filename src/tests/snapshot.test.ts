@@ -13,3 +13,8 @@ test("serializes deterministic snapshots", () => {
 test("creates safe snapshot filenames", () => {
   assert.equal(snapshotFileName("skills/core/prompt.md"), "skills__core__prompt.md.snap.md");
 });
+
+test("creates distinct filenames for paths that previously collided", () => {
+  assert.equal(snapshotFileName("prompts/a/b.md"), "prompts__a__b.md.snap.md");
+  assert.equal(snapshotFileName("prompts/a__b.md"), "prompts__a_5f_5fb.md.snap.md");
+});
