@@ -30,6 +30,20 @@ test("help exits successfully after a command", () => {
   assert.equal(result.stderr, "");
 });
 
+test("top-level help exits successfully", () => {
+  const result = capture(() => main(["--help"], process.cwd()));
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /Usage:/);
+  assert.equal(result.stderr, "");
+});
+
+test("top-level version prints the package version", () => {
+  const result = capture(() => main(["--version"], process.cwd()));
+  assert.equal(result.code, 0);
+  assert.equal(result.stdout, "0.1.0\n");
+  assert.equal(result.stderr, "");
+});
+
 test("unknown options fail instead of being treated as paths", () => {
   const result = capture(() => main(["check", "--frobnicate"], process.cwd()));
   assert.equal(result.code, 1);
