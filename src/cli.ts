@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { writeDefaultConfig } from "./config.js";
 import { formatSummary } from "./report.js";
 import { runSnapshots } from "./run.js";
@@ -17,7 +18,6 @@ function usage(): string {
 function parse(argv: string[]): Parsed {
   const parsed: Parsed = { inputs: [], format: "text", force: false, help: false, version: false };
   const args = [...argv];
-  parsed.command = args.shift();
   while (args.length > 0) {
     const arg = args.shift() ?? "";
     if (arg === "--help" || arg === "-h") parsed.help = true;
@@ -27,6 +27,7 @@ function parse(argv: string[]): Parsed {
     else if (arg.startsWith("--format=")) parsed.format = readFormat(arg.slice("--format=".length));
     else if (arg === "--accept") continue;
     else if (arg.startsWith("--")) throw new Error(`Unknown option: ${arg}`);
+    else if (!parsed.command) parsed.command = arg;
     else parsed.inputs.push(arg);
   }
   return parsed;
@@ -56,7 +57,7 @@ export function main(argv = process.argv.slice(2), root = process.cwd()): number
     }
     if (parsed.help || !parsed.command) {
       process.stdout.write(usage());
-      return parsed.command ? 0 : 1;
+      return parsed.help ? 0 : 1;
     }
     if (parsed.command === "init") {
       init(resolve(root), parsed.force);
@@ -74,6 +75,15 @@ export function main(argv = process.argv.slice(2), root = process.cwd()): number
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+function isEntrypoint(moduleUrl: string, argvPath: string | undefined): boolean {
+  if (!argvPath) return false;
+  try {
+    return realpathSync(fileURLToPath(moduleUrl)) === realpathSync(argvPath);
+  } catch {
+    return false;
+  }
+}
+
+if (isEntrypoint(import.meta.url, process.argv[1])) {
   process.exitCode = main();
 }
