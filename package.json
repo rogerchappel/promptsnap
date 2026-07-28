@@ -21,7 +21,8 @@
   "scripts": {
     "build": "tsc",
     "check": "tsc --noEmit",
-    "test": "node --test dist/tests/*.test.js",
+    "test": "npm run build && npm run test:compiled",
+    "test:compiled": "node scripts/run-tests.mjs",
     "smoke": "bash scripts/smoke.sh",
     "package:smoke": "bash scripts/package-smoke.sh",
     "release:check": "npm run check && npm run build && npm test && npm run smoke && npm run package:smoke"
