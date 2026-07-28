@@ -75,10 +75,10 @@ Formats: `text`, `json`, `markdown`.
 
 ```sh
 npm run check
-npm run build
 npm test
 npm run smoke
-bash scripts/validate.sh
+npm run package:smoke
+npm run release:check
 ```
 
 ## License
@@ -92,11 +92,13 @@ Use the checked-in scripts before opening or publishing a release:
 ```sh
 npm run check
 npm test
-npm run build
 npm run smoke
 npm run package:smoke
 npm run release:check
 ```
+
+`npm test` builds the TypeScript sources before running the compiled test suite,
+so it is safe to run directly after `npm ci` in a clean checkout.
 
 The package smoke packs the project, installs the tarball into a clean temporary
 consumer, and exercises the installed `promptsnap` bin through both its local
