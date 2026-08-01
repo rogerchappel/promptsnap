@@ -24,6 +24,13 @@ mkdir -p "$CONSUMER"
   test -f promptsnap.config.json
   test -f prompts/example.prompt.md
 
+  npx --no-install promptsnap update prompts > update.txt
+  grep -q 'prompts/example.prompt.md' update.txt
+  npx --no-install promptsnap check --format markdown > check.md
+  grep -q '# promptsnap check passed' check.md
+  npx --no-install promptsnap diff --format markdown > diff.md
+  grep -q '# promptsnap diff passed' diff.md
+
   if ./node_modules/.bin/promptsnap invalid-command > invalid.stdout 2> invalid.stderr; then
     echo "invalid command unexpectedly succeeded" >&2
     exit 1

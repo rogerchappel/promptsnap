@@ -27,6 +27,14 @@ jobs:
           registry-url: https://registry.npmjs.org
       - name: Install dependencies
         run: npm ci
+      - name: Validate tag and package version
+        run: |
+          set -euo pipefail
+          package_version="$(node -p "require('./package.json').version")"
+          test "$GITHUB_REF_NAME" = "v$package_version" || {
+            echo "Tag $GITHUB_REF_NAME does not match package version $package_version" >&2
+            exit 1
+          }
       - name: Install ReleaseBox
         run: |
           set -euo pipefail
@@ -37,11 +45,13 @@ jobs:
         run: node /tmp/releasebox/bin/releasebox.js check .
       - name: Run release checks
         run: npm run release:check
-      - name: Build package
-        run: npm pack
+      - name: Publish package to npm
+        run: npm publish --provenance --access public
       - name: Generate release notes
         run: node /tmp/releasebox/bin/releasebox.js notes . > RELEASE_NOTES.md
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" --notes-file RELEASE_NOTES.md *.tgz
+        run: |
+          npm pack --silent
+          gh release create "${GITHUB_REF_NAME}" --notes-file RELEASE_NOTES.md *.tgz
