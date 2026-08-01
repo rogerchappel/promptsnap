@@ -25,7 +25,8 @@
     "test:compiled": "node scripts/run-tests.mjs",
     "smoke": "bash scripts/smoke.sh",
     "package:smoke": "bash scripts/package-smoke.sh",
-    "release:check": "npm run check && npm run build && npm test && npm run smoke && npm run package:smoke"
+    "release:workflow": "node scripts/validate-release-workflow.mjs",
+    "release:check": "npm run check && npm run build && npm test && npm run smoke && npm run package:smoke && npm run release:workflow"
   },
   "keywords": [
     "prompt",
