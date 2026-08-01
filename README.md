@@ -12,6 +12,9 @@ Prompt changes can quietly alter behavior contracts. `promptsnap` gives local-fi
 npm install --save-dev promptsnap
 ```
 
+The npm package is not published yet. Until the first tagged release, install
+from a checked-out source tree using the local-development steps below.
+
 During local development in this repo:
 
 ```sh
@@ -23,7 +26,7 @@ npm run build
 
 ```sh
 npx promptsnap init
-npx promptsnap update prompts skills
+npx promptsnap update prompts
 npx promptsnap check --format markdown
 npx promptsnap diff --format markdown
 ```
