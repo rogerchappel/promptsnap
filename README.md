@@ -57,6 +57,8 @@ Snapshots are written to `__snapshots__/` by default. Commit snapshot changes al
 - `promptsnap check [paths...]` exits non-zero for missing, changed, or over-budget snapshots.
 - `promptsnap diff [paths...] --format markdown` prints review-friendly diffs.
 
+Token estimates above `warnTokens` and at or below `maxTokens` are reported as warnings in text, JSON, and Markdown output. Warnings do not make a command fail; estimates above `maxTokens` remain failing over-budget results.
+
 Formats: `text`, `json`, `markdown`.
 
 ## CI Example
