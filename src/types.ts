@@ -39,6 +39,9 @@ export interface ComparisonResult {
   snapshotPath: string;
   status: "created" | "matched" | "changed" | "missing" | "over-budget";
   tokens: number;
+  warning?: boolean;
+  warnTokens?: number;
+  warningMessage?: string;
   maxTokens?: number;
   diff?: string;
   message?: string;
@@ -53,6 +56,7 @@ export interface RunSummary {
   matched: number;
   changed: number;
   missing: number;
+  warnings: number;
   overBudget: number;
   results: ComparisonResult[];
 }

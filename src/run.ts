@@ -15,7 +15,7 @@ export function prepareSource(source: SourcePrompt, config: PromptSnapConfig): {
 }
 
 function emptySummary(command: RunSummary["command"], root: string): RunSummary {
-  return { command, root, ok: true, checked: 0, created: 0, matched: 0, changed: 0, missing: 0, overBudget: 0, results: [] };
+  return { command, root, ok: true, checked: 0, created: 0, matched: 0, changed: 0, missing: 0, warnings: 0, overBudget: 0, results: [] };
 }
 
 function push(summary: RunSummary, result: ComparisonResult): void {
@@ -25,7 +25,18 @@ function push(summary: RunSummary, result: ComparisonResult): void {
   if (result.status === "matched") summary.matched += 1;
   if (result.status === "changed") summary.changed += 1;
   if (result.status === "missing") summary.missing += 1;
+  if (result.warning) summary.warnings += 1;
   if (result.status === "over-budget") summary.overBudget += 1;
+}
+
+function withWarning(result: ComparisonResult, warnTokens: number | undefined): ComparisonResult {
+  if (warnTokens === undefined || result.tokens <= warnTokens) return result;
+  return {
+    ...result,
+    warning: true,
+    warnTokens,
+    warningMessage: `Estimated ${result.tokens} tokens exceeds warning threshold ${warnTokens}`
+  };
 }
 
 export function runSnapshots(root: string, command: RunSummary["command"], inputs: string[] = []): RunSummary {
@@ -52,17 +63,17 @@ export function runSnapshots(root: string, command: RunSummary["command"], input
     if (command === "update") {
       writeSnapshot(target, record);
       const status = !existing ? "created" : existing.content === prepared.content && existing.sha256 === record.sha256 ? "matched" : "changed";
-      push(summary, { source: source.relativePath, snapshotPath: displayPath, status, tokens: prepared.tokens });
+      push(summary, withWarning({ source: source.relativePath, snapshotPath: displayPath, status, tokens: prepared.tokens }, config.tokenBudget.warnTokens));
       continue;
     }
     if (!existing) {
-      push(summary, { source: source.relativePath, snapshotPath: displayPath, status: "missing", tokens: prepared.tokens, message: "Run promptsnap update to create this snapshot." });
+      push(summary, withWarning({ source: source.relativePath, snapshotPath: displayPath, status: "missing", tokens: prepared.tokens, message: "Run promptsnap update to create this snapshot." }, config.tokenBudget.warnTokens));
       continue;
     }
     if (existing.content === prepared.content && existing.sha256 === record.sha256) {
-      push(summary, { source: source.relativePath, snapshotPath: displayPath, status: "matched", tokens: prepared.tokens });
+      push(summary, withWarning({ source: source.relativePath, snapshotPath: displayPath, status: "matched", tokens: prepared.tokens }, config.tokenBudget.warnTokens));
     } else {
-      push(summary, { source: source.relativePath, snapshotPath: displayPath, status: "changed", tokens: prepared.tokens, diff: unifiedDiff(source.relativePath, existing.content, prepared.content) });
+      push(summary, withWarning({ source: source.relativePath, snapshotPath: displayPath, status: "changed", tokens: prepared.tokens, diff: unifiedDiff(source.relativePath, existing.content, prepared.content) }, config.tokenBudget.warnTokens));
     }
   }
   summary.ok = command === "update" ? summary.overBudget === 0 : summary.changed === 0 && summary.missing === 0 && summary.overBudget === 0;
