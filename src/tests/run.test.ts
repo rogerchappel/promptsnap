@@ -72,6 +72,47 @@ test("check reports changed prompts", () => {
   }
 });
 
+test("reports warning thresholds without failing update, check, or diff", () => {
+  const root = fixture();
+  try {
+    const configPath = join(root, "promptsnap.config.json");
+    const config = JSON.parse(readFileSync(configPath, "utf8"));
+    config.tokenBudget = { warnTokens: 1, maxTokens: 8000 };
+    writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+    writeFileSync(join(root, "prompts", "system.prompt.md"), `${"a".repeat(64)}\n`, "utf8");
+
+    for (const command of ["update", "check", "diff"] as const) {
+      const summary = runSnapshots(root, command);
+      assert.equal(summary.ok, true);
+      assert.equal(summary.warnings, 1);
+      assert.equal(summary.results[0]?.tokens, 16);
+      assert.equal(summary.results[0]?.warning, true);
+      assert.equal(summary.results[0]?.warnTokens, 1);
+      assert.match(summary.results[0]?.warningMessage ?? "", /16 tokens exceeds warning threshold 1/);
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("max token budgets continue to fail as over-budget", () => {
+  const root = fixture();
+  try {
+    const configPath = join(root, "promptsnap.config.json");
+    const config = JSON.parse(readFileSync(configPath, "utf8"));
+    config.tokenBudget = { warnTokens: 1, maxTokens: 1 };
+    writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+
+    const update = runSnapshots(root, "update");
+    assert.equal(update.ok, false);
+    assert.equal(update.overBudget, 1);
+    assert.equal(update.warnings, 0);
+    assert.equal(update.results[0]?.status, "over-budget");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("update redacts secret-like prompt content before writing snapshots", () => {
   const root = fixture();
   try {
