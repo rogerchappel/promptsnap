@@ -50,6 +50,11 @@ Snapshots are written to `__snapshots__/` by default. Commit snapshot changes al
 }
 ```
 
+The config file is validated when a command loads it. Invalid JSON, unknown fields,
+unsupported normalizers, malformed redaction rules, and invalid token budgets fail
+with the config path and exact offending field. All fields are optional; omitted
+fields (including individual `tokenBudget` values) retain their defaults.
+
 ## Commands
 
 - `promptsnap init [--force]` creates a config and sample prompt.
