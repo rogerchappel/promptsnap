@@ -10,7 +10,10 @@ promptsnap is a local-first developer tool. It does not call hosted LLMs, send t
 
 ## Reporting a Vulnerability
 
-Please report vulnerabilities through GitHub private vulnerability reporting on `rogerchappel/promptsnap`, or open a minimal public issue if the report does not expose sensitive details.
+Please email vulnerability reports to `miscanalysis@gmail.com`. Do not include
+sensitive details, exploit instructions, or real secrets in a public GitHub
+issue. You may open a minimal public issue asking for private follow-up if it
+does not reveal the vulnerability.
 
 Useful reports include:
 
