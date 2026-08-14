@@ -6,6 +6,29 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 TARBALL="$(cd "$ROOT" && npm pack --silent --pack-destination "$TMP")"
+MANIFEST="$TMP/manifest.txt"
+tar -tzf "$TMP/$TARBALL" | LC_ALL=C sort > "$MANIFEST"
+
+for required in \
+  package/dist/cli.js \
+  package/dist/index.js \
+  package/package.json \
+  package/README.md \
+  package/LICENSE \
+  package/SECURITY.md \
+  package/CHANGELOG.md \
+  package/CONTRIBUTING.md; do
+  if ! grep -Fxq "$required" "$MANIFEST"; then
+    echo "package manifest is missing required file: $required" >&2
+    exit 1
+  fi
+done
+
+if grep -E '(^|/)tests/|\.test\.(js|d\.ts|js\.map)$' "$MANIFEST"; then
+  echo "package manifest contains compiled test artifacts" >&2
+  exit 1
+fi
+
 CONSUMER="$TMP/consumer"
 mkdir -p "$CONSUMER"
 
