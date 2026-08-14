@@ -12,6 +12,7 @@
   },
   "files": [
     "dist",
+    "!dist/tests",
     "README.md",
     "LICENSE",
     "SECURITY.md",
