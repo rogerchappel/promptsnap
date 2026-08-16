@@ -26,6 +26,31 @@ test("update creates snapshots and check passes", () => {
   }
 });
 
+test("repeated explicit inputs are processed once", () => {
+  const root = fixture();
+  try {
+    const source = "prompts/system.prompt.md";
+    const update = runSnapshots(root, "update", [source, source]);
+    assert.equal(update.checked, 1);
+    assert.equal(update.created, 1);
+    assert.equal(update.results.length, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("overlapping directory and file inputs are processed once", () => {
+  const root = fixture();
+  try {
+    const update = runSnapshots(root, "update", ["prompts", "prompts/system.prompt.md"]);
+    assert.equal(update.checked, 1);
+    assert.equal(update.created, 1);
+    assert.equal(update.results.length, 1);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("update preserves snapshots for source paths that previously collided", () => {
   const root = fixture();
   try {
