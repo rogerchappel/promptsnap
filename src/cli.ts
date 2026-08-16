@@ -11,6 +11,13 @@ const VERSION = "0.1.0";
 
 type Parsed = { command?: string; inputs: string[]; format: OutputFormat; force: boolean; help: boolean; version: boolean };
 
+const COMMAND_OPTIONS: Record<string, Set<string>> = {
+  init: new Set(["--force"]),
+  check: new Set(["--format"]),
+  update: new Set(["--format"]),
+  diff: new Set(["--format"])
+};
+
 function usage(): string {
   return `promptsnap ${VERSION}\n\nUsage:\n  promptsnap init [--force]\n  promptsnap check [paths...] [--format text|json|markdown]\n  promptsnap update [paths...] [--format text|json|markdown]\n  promptsnap diff [paths...] [--format text|json|markdown]\n\nLocal-first prompt snapshot testing. No network calls are made.\n`;
 }
@@ -22,15 +29,29 @@ function parse(argv: string[]): Parsed {
     const arg = args.shift() ?? "";
     if (arg === "--help" || arg === "-h") parsed.help = true;
     else if (arg === "--version" || arg === "-v") parsed.version = true;
-    else if (arg === "--force") parsed.force = true;
-    else if (arg === "--format") parsed.format = readFormat(args.shift());
-    else if (arg.startsWith("--format=")) parsed.format = readFormat(arg.slice("--format=".length));
-    else if (arg === "--accept") continue;
+    else if (arg === "--force") {
+      assertCommandOption(parsed.command, "--force");
+      parsed.force = true;
+    }
+    else if (arg === "--format") {
+      assertCommandOption(parsed.command, "--format");
+      parsed.format = readFormat(args.shift());
+    }
+    else if (arg.startsWith("--format=")) {
+      assertCommandOption(parsed.command, "--format");
+      parsed.format = readFormat(arg.slice("--format=".length));
+    }
     else if (arg.startsWith("--")) throw new Error(`Unknown option: ${arg}`);
     else if (!parsed.command) parsed.command = arg;
     else parsed.inputs.push(arg);
   }
   return parsed;
+}
+
+function assertCommandOption(command: string | undefined, option: string): void {
+  if (command && COMMAND_OPTIONS[command]?.has(option)) return;
+  if (command && COMMAND_OPTIONS[command]) throw new Error(`Option ${option} is not valid for command ${command}`);
+  throw new Error(`Unknown option: ${option}`);
 }
 
 function readFormat(value: string | undefined): OutputFormat {
