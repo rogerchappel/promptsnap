@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import { main } from "../cli.js";
 
@@ -48,4 +51,23 @@ test("unknown options fail instead of being treated as paths", () => {
   const result = capture(() => main(["check", "--frobnicate"], process.cwd()));
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Unknown option: --frobnicate/);
+});
+
+test("check rejects init-only --force", () => {
+  const result = capture(() => main(["check", "--force"], process.cwd()));
+  assert.equal(result.code, 1);
+  assert.equal(result.stderr, "Option --force is not valid for command check\n");
+});
+
+test("init rejects --format before writing files", () => {
+  const root = mkdtempSync(join(tmpdir(), "promptsnap-cli-"));
+  try {
+    const result = capture(() => main(["init", "--format", "json"], root));
+    assert.equal(result.code, 1);
+    assert.equal(result.stderr, "Option --format is not valid for command init\n");
+    assert.equal(existsSync(join(root, "promptsnap.config.json")), false);
+    assert.equal(existsSync(join(root, "prompts")), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

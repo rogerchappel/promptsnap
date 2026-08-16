@@ -1,11 +1,17 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { matchesAny, relativePosix } from "./glob.js";
 import type { PromptSnapConfig, SourcePrompt } from "./types.js";
 
 const ALWAYS_EXCLUDE = new Set([".git", "node_modules", "dist", "coverage"]);
 
-function walk(root: string, dir: string, config: PromptSnapConfig, out: SourcePrompt[]): void {
+function addSource(root: string, absolute: string, out: Map<string, SourcePrompt>): void {
+  const canonical = realpathSync(absolute);
+  if (out.has(canonical)) return;
+  out.set(canonical, { absolutePath: canonical, relativePath: relativePosix(root, canonical), raw: readFileSync(canonical, "utf8") });
+}
+
+function walk(root: string, dir: string, config: PromptSnapConfig, out: Map<string, SourcePrompt>): void {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (ALWAYS_EXCLUDE.has(entry.name)) continue;
     const absolute = join(dir, entry.name);
@@ -17,12 +23,12 @@ function walk(root: string, dir: string, config: PromptSnapConfig, out: SourcePr
     }
     if (!entry.isFile()) continue;
     if (!matchesAny(relative, config.include)) continue;
-    out.push({ absolutePath: absolute, relativePath: relative, raw: readFileSync(absolute, "utf8") });
+    addSource(root, absolute, out);
   }
 }
 
 export function discoverSources(root: string, inputs: string[], config: PromptSnapConfig): SourcePrompt[] {
-  const results: SourcePrompt[] = [];
+  const results = new Map<string, SourcePrompt>();
   const targets = inputs.length > 0 ? inputs : [root];
   for (const input of targets) {
     const target = resolve(root, input);
@@ -33,9 +39,9 @@ export function discoverSources(root: string, inputs: string[], config: PromptSn
     } else if (stats.isFile()) {
       const relative = relativePosix(root, target);
       if (!matchesAny(relative, config.exclude)) {
-        results.push({ absolutePath: target, relativePath: relative, raw: readFileSync(target, "utf8") });
+        addSource(root, target, results);
       }
     }
   }
-  return results.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+  return [...results.values()].sort((a, b) => a.relativePath.localeCompare(b.relativePath));
 }
