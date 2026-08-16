@@ -73,6 +73,10 @@ Token estimates above `warnTokens` and at or below `maxTokens` are reported as w
 
 Formats: `text`, `json`, `markdown`.
 
+Command options are strict: `--force` is valid only for `init`, while `--format`
+is valid only for `check`, `update`, and `diff`. Repeated paths and overlapping
+directory/file inputs are deduplicated, so each source is processed once.
+
 ## CI Example
 
 ```yaml
