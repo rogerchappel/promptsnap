@@ -64,7 +64,8 @@ fields (including individual `tokenBudget` values) retain their defaults.
 
 ## Commands
 
-- `promptsnap init [--force]` creates a config and sample prompt.
+- `promptsnap init [--force]` creates a config and a missing sample prompt. `--force`
+  replaces only the config and preserves an existing `prompts/example.prompt.md`.
 - `promptsnap update [paths...]` writes or refreshes snapshots.
 - `promptsnap check [paths...]` exits non-zero for missing, changed, or over-budget snapshots.
 - `promptsnap diff [paths...] --format markdown` prints review-friendly diffs.

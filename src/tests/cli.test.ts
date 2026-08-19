@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -37,6 +37,7 @@ test("top-level help exits successfully", () => {
   const result = capture(() => main(["--help"], process.cwd()));
   assert.equal(result.code, 0);
   assert.match(result.stdout, /Usage:/);
+  assert.match(result.stdout, /--force  Replace the config during init; preserve an existing sample prompt\./);
   assert.equal(result.stderr, "");
 });
 
@@ -67,6 +68,38 @@ test("init rejects --format before writing files", () => {
     assert.equal(result.stderr, "Option --format is not valid for command init\n");
     assert.equal(existsSync(join(root, "promptsnap.config.json")), false);
     assert.equal(existsSync(join(root, "prompts")), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("init --force creates a missing sample prompt", () => {
+  const root = mkdtempSync(join(tmpdir(), "promptsnap-cli-"));
+  try {
+    const result = capture(() => main(["init", "--force"], root));
+    assert.equal(result.code, 0);
+    assert.equal(result.stderr, "");
+    assert.equal(existsSync(join(root, "promptsnap.config.json")), true);
+    assert.match(readFileSync(join(root, "prompts", "example.prompt.md"), "utf8"), /Example prompt/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("init --force replaces the config without overwriting an existing sample", () => {
+  const root = mkdtempSync(join(tmpdir(), "promptsnap-cli-"));
+  const sample = join(root, "prompts", "example.prompt.md");
+  try {
+    mkdirSync(join(root, "prompts"));
+    writeFileSync(join(root, "promptsnap.config.json"), "{}\n", "utf8");
+    writeFileSync(sample, "KEEP USER PROMPT\n", "utf8");
+
+    const result = capture(() => main(["init", "--force"], root));
+
+    assert.equal(result.code, 0);
+    assert.equal(result.stderr, "");
+    assert.notEqual(readFileSync(join(root, "promptsnap.config.json"), "utf8"), "{}\n");
+    assert.equal(readFileSync(sample, "utf8"), "KEEP USER PROMPT\n");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
