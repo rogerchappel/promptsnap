@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdirSync, realpathSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, realpathSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeDefaultConfig } from "./config.js";
@@ -19,7 +19,7 @@ const COMMAND_OPTIONS: Record<string, Set<string>> = {
 };
 
 function usage(): string {
-  return `promptsnap ${VERSION}\n\nUsage:\n  promptsnap init [--force]\n  promptsnap check [paths...] [--format text|json|markdown]\n  promptsnap update [paths...] [--format text|json|markdown]\n  promptsnap diff [paths...] [--format text|json|markdown]\n\nLocal-first prompt snapshot testing. No network calls are made.\n`;
+  return `promptsnap ${VERSION}\n\nUsage:\n  promptsnap init [--force]\n  promptsnap check [paths...] [--format text|json|markdown]\n  promptsnap update [paths...] [--format text|json|markdown]\n  promptsnap diff [paths...] [--format text|json|markdown]\n\nOptions:\n  --force  Replace the config during init; preserve an existing sample prompt.\n\nLocal-first prompt snapshot testing. No network calls are made.\n`;
 }
 
 function parse(argv: string[]): Parsed {
@@ -63,7 +63,7 @@ function init(root: string, force: boolean): void {
   const state = writeDefaultConfig(root, force);
   mkdirSync(join(root, "prompts"), { recursive: true });
   const sample = join(root, "prompts", "example.prompt.md");
-  if (force || state === "created") {
+  if (!existsSync(sample)) {
     writeFileSync(sample, "# Example prompt\n\nYou are a concise local-first assistant.\n", "utf8");
   }
   process.stdout.write(state === "created" ? "Created promptsnap.config.json\n" : "promptsnap.config.json already exists\n");
