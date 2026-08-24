@@ -9,7 +9,7 @@ export function formatSummary(summary: RunSummary, format: OutputFormat): string
 function textSummary(summary: RunSummary): string {
   const lines = [
     `promptsnap ${summary.command}: ${summary.ok ? "ok" : "failed"}`,
-    `checked=${summary.checked} matched=${summary.matched} created=${summary.created} changed=${summary.changed} missing=${summary.missing} warnings=${summary.warnings} overBudget=${summary.overBudget}`
+    `checked=${summary.checked} matched=${summary.matched} created=${summary.created} changed=${summary.changed} missing=${summary.missing} stale=${summary.stale} warnings=${summary.warnings} overBudget=${summary.overBudget}`
   ];
   for (const result of summary.results.filter((item) => item.status !== "matched" || item.warning)) {
     const details = [result.message, result.warningMessage].filter(Boolean).join("; ");
@@ -28,6 +28,7 @@ function markdownSummary(summary: RunSummary): string {
     `- Created: ${summary.created}`,
     `- Changed: ${summary.changed}`,
     `- Missing: ${summary.missing}`,
+    `- Stale: ${summary.stale}`,
     `- Warnings: ${summary.warnings}`,
     `- Over budget: ${summary.overBudget}`,
     "",

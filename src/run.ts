@@ -1,10 +1,11 @@
+import { rmSync } from "node:fs";
 import { relative } from "node:path";
 import { loadConfig } from "./config.js";
 import { discoverSources } from "./discover.js";
 import { unifiedDiff } from "./diff.js";
 import { normalizeText } from "./normalize.js";
 import { redactText } from "./redact.js";
-import { createSnapshot, readSnapshot, snapshotPath, writeSnapshot } from "./snapshot.js";
+import { createSnapshot, listSnapshots, readSnapshot, snapshotPath, writeSnapshot } from "./snapshot.js";
 import { assertWithinBudget, estimateTokens } from "./tokens.js";
 import type { ComparisonResult, PromptSnapConfig, RunSummary, SourcePrompt } from "./types.js";
 
@@ -15,7 +16,7 @@ export function prepareSource(source: SourcePrompt, config: PromptSnapConfig): {
 }
 
 function emptySummary(command: RunSummary["command"], root: string): RunSummary {
-  return { command, root, ok: true, checked: 0, created: 0, matched: 0, changed: 0, missing: 0, warnings: 0, overBudget: 0, results: [] };
+  return { command, root, ok: true, checked: 0, created: 0, matched: 0, changed: 0, missing: 0, warnings: 0, overBudget: 0, stale: 0, results: [] };
 }
 
 function push(summary: RunSummary, result: ComparisonResult): void {
@@ -27,6 +28,7 @@ function push(summary: RunSummary, result: ComparisonResult): void {
   if (result.status === "missing") summary.missing += 1;
   if (result.warning) summary.warnings += 1;
   if (result.status === "over-budget") summary.overBudget += 1;
+  if (result.status === "stale") summary.stale += 1;
 }
 
 function withWarning(result: ComparisonResult, warnTokens: number | undefined): ComparisonResult {
@@ -76,6 +78,20 @@ export function runSnapshots(root: string, command: RunSummary["command"], input
       push(summary, withWarning({ source: source.relativePath, snapshotPath: displayPath, status: "changed", tokens: prepared.tokens, diff: unifiedDiff(source.relativePath, existing.content, prepared.content) }, config.tokenBudget.warnTokens));
     }
   }
-  summary.ok = command === "update" ? summary.overBudget === 0 : summary.changed === 0 && summary.missing === 0 && summary.overBudget === 0;
+  if (inputs.length === 0) {
+    const discovered = new Set(sources.map((source) => source.relativePath));
+    for (const snapshot of listSnapshots(root, config.snapshotDir)) {
+      if (discovered.has(snapshot.record.source)) continue;
+      if (command === "update") rmSync(snapshot.path);
+      push(summary, {
+        source: snapshot.record.source,
+        snapshotPath: relative(root, snapshot.path),
+        status: "stale",
+        tokens: snapshot.record.tokens,
+        message: command === "update" ? "Removed snapshot for missing source." : "Run promptsnap update to remove this stale snapshot."
+      });
+    }
+  }
+  summary.ok = command === "update" ? summary.overBudget === 0 : summary.changed === 0 && summary.missing === 0 && summary.overBudget === 0 && summary.stale === 0;
   return summary;
 }
