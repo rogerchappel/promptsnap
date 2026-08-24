@@ -14,6 +14,7 @@ const summary: RunSummary = {
   missing: 0,
   warnings: 0,
   overBudget: 0,
+  stale: 0,
   results: [{ source: "prompts/a.md", snapshotPath: "__snapshots__/a.snap.md", status: "changed", tokens: 12, diff: "--- a\n+++ b\n-old\n+new\n" }]
 };
 

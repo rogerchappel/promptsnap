@@ -97,6 +97,46 @@ test("check reports changed prompts", () => {
   }
 });
 
+test("full check and diff report stale snapshots and update removes only confirmed records", () => {
+  const root = fixture();
+  try {
+    runSnapshots(root, "update");
+    rmSync(join(root, "prompts", "system.prompt.md"));
+    writeFileSync(join(root, "__snapshots__", "notes.txt"), "keep me\n", "utf8");
+    writeFileSync(join(root, "__snapshots__", "broken.snap.md"), "not a snapshot\n", "utf8");
+
+    for (const command of ["check", "diff"] as const) {
+      const summary = runSnapshots(root, command);
+      assert.equal(summary.ok, false);
+      assert.equal(summary.stale, 1);
+      assert.equal(summary.results[0]?.status, "stale");
+    }
+
+    const update = runSnapshots(root, "update");
+    assert.equal(update.ok, true);
+    assert.equal(update.stale, 1);
+    assert.equal(readFileSync(join(root, "__snapshots__", "notes.txt"), "utf8"), "keep me\n");
+    assert.equal(readFileSync(join(root, "__snapshots__", "broken.snap.md"), "utf8"), "not a snapshot\n");
+    assert.equal(runSnapshots(root, "check").stale, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("scoped inputs do not report snapshots belonging to unselected sources", () => {
+  const root = fixture();
+  try {
+    writeFileSync(join(root, "prompts", "second.prompt.md"), "second\n", "utf8");
+    runSnapshots(root, "update");
+    rmSync(join(root, "prompts", "second.prompt.md"));
+    const scoped = runSnapshots(root, "check", ["prompts/system.prompt.md"]);
+    assert.equal(scoped.ok, true);
+    assert.equal(scoped.stale, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("reports warning thresholds without failing update, check, or diff", () => {
   const root = fixture();
   try {
