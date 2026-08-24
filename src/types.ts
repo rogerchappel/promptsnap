@@ -37,7 +37,7 @@ export interface SnapshotRecord {
 export interface ComparisonResult {
   source: string;
   snapshotPath: string;
-  status: "created" | "matched" | "changed" | "missing" | "over-budget";
+  status: "created" | "matched" | "changed" | "missing" | "over-budget" | "stale";
   tokens: number;
   warning?: boolean;
   warnTokens?: number;
@@ -58,5 +58,6 @@ export interface RunSummary {
   missing: number;
   warnings: number;
   overBudget: number;
+  stale: number;
   results: ComparisonResult[];
 }

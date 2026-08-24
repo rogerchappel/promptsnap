@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { sha256 } from "./hash.js";
 import type { SnapshotRecord } from "./types.js";
@@ -66,6 +66,22 @@ export function parseSnapshot(text: string): SnapshotRecord {
 export function readSnapshot(path: string): SnapshotRecord | undefined {
   if (!existsSync(path)) return undefined;
   return parseSnapshot(readFileSync(path, "utf8"));
+}
+
+export function listSnapshots(root: string, snapshotDir: string): Array<{ path: string; record: SnapshotRecord }> {
+  const directory = join(root, snapshotDir);
+  if (!existsSync(directory)) return [];
+  const snapshots: Array<{ path: string; record: SnapshotRecord }> = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith(".snap.md")) continue;
+    const path = join(directory, entry.name);
+    try {
+      snapshots.push({ path, record: parseSnapshot(readFileSync(path, "utf8")) });
+    } catch {
+      // Unrelated or malformed files are not confirmed snapshots and remain untouched.
+    }
+  }
+  return snapshots;
 }
 
 export function writeSnapshot(path: string, record: SnapshotRecord): void {
