@@ -27,6 +27,17 @@ test("formats json reports", () => {
   assert.equal(JSON.parse(formatSummary(summary, "json")).changed, 1);
 });
 
+test("preserves aligned diffs in text and markdown reports", () => {
+  const aligned = { ...summary, command: "diff" as const };
+  const text = formatSummary(aligned, "text");
+  assert.match(text, /--- a\n\+\+\+ b\n-old\n\+new\n$/);
+  assert.doesNotMatch(text, /^[-+]$/m);
+
+  const markdown = formatSummary(aligned, "markdown");
+  assert.match(markdown, /```diff\n--- a\n\+\+\+ b\n-old\n\+new\n```/);
+  assert.doesNotMatch(markdown, /```diff\n\n/);
+});
+
 test("exposes warning outcomes in text, JSON, and markdown reports", () => {
   const warningSummary: RunSummary = {
     ...summary,
