@@ -68,7 +68,7 @@ fields (including individual `tokenBudget` values) retain their defaults.
   replaces only the config and preserves an existing `prompts/example.prompt.md`.
 - `promptsnap update [paths...]` writes or refreshes snapshots. A full, config-driven update also removes valid promptsnap records whose source is no longer discovered; unrelated and malformed files are preserved.
 - `promptsnap check [paths...]` exits non-zero for missing, changed, stale, or over-budget snapshots. Stale reconciliation runs only without explicit paths, so a scoped check does not report snapshots for unselected sources.
-- `promptsnap diff [paths...] --format markdown` prints review-friendly diffs.
+- `promptsnap diff [paths...] --format markdown` prints line-aligned, review-friendly diffs that retain unchanged context around insertions and deletions.
 
 Token estimates above `warnTokens` and at or below `maxTokens` are reported as warnings in text, JSON, and Markdown output. Warnings do not make a command fail; estimates above `maxTokens` remain failing over-budget results.
 
