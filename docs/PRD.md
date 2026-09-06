@@ -54,9 +54,9 @@ Inspired by Jest/Vitest snapshot workflows, approval testing, and the growing pr
 
 ```bash
 promptsnap init
+promptsnap update ./skills ./prompts
 promptsnap check ./skills ./prompts
-promptsnap update --accept
-promptsnap diff --format markdown
+promptsnap diff ./skills ./prompts --format markdown
 ```
 
 ## Verification
