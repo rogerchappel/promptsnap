@@ -19,7 +19,7 @@ const COMMAND_OPTIONS: Record<string, Set<string>> = {
 };
 
 function usage(): string {
-  return `promptsnap ${VERSION}\n\nUsage:\n  promptsnap init [--force]\n  promptsnap check [paths...] [--format text|json|markdown]\n  promptsnap update [paths...] [--format text|json|markdown]\n  promptsnap diff [paths...] [--format text|json|markdown]\n\nOptions:\n  --force  Replace the config during init; preserve an existing sample prompt.\n\nLocal-first prompt snapshot testing. No network calls are made.\n`;
+  return `promptsnap ${VERSION}\n\nUsage:\n  promptsnap --help\n  promptsnap --version\n  promptsnap init [--force]\n  promptsnap check [paths...] [--format text|json|markdown]\n  promptsnap update [paths...] [--format text|json|markdown]\n  promptsnap diff [paths...] [--format text|json|markdown]\n\nOptions:\n  --force  Replace the config during init; preserve an existing sample prompt.\n\nLocal-first prompt snapshot testing. No network calls are made.\n`;
 }
 
 function parse(argv: string[]): Parsed {
