@@ -72,6 +72,9 @@ function init(root: string, force: boolean): void {
 export function main(argv = process.argv.slice(2), root = process.cwd()): number {
   try {
     const parsed = parse(argv);
+    if (parsed.command && !COMMAND_OPTIONS[parsed.command]) {
+      throw new Error(`Unknown command: ${parsed.command}`);
+    }
     if (parsed.version) {
       process.stdout.write(`${VERSION}\n`);
       return 0;
@@ -81,6 +84,9 @@ export function main(argv = process.argv.slice(2), root = process.cwd()): number
       return parsed.help ? 0 : 1;
     }
     if (parsed.command === "init") {
+      if (parsed.inputs.length > 0) {
+        throw new Error(`Command init does not accept positional operands: ${parsed.inputs.join(", ")}`);
+      }
       init(resolve(root), parsed.force);
       return 0;
     }
