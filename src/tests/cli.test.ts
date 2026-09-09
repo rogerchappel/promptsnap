@@ -48,6 +48,13 @@ test("top-level version prints the package version", () => {
   assert.equal(result.stderr, "");
 });
 
+test("an invalid command cannot be masked by a global version flag", () => {
+  const result = capture(() => main(["invalid-command", "--version"], process.cwd()));
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "Unknown command: invalid-command\n");
+});
+
 test("unknown options fail instead of being treated as paths", () => {
   const result = capture(() => main(["check", "--frobnicate"], process.cwd()));
   assert.equal(result.code, 1);
@@ -66,6 +73,20 @@ test("init rejects --format before writing files", () => {
     const result = capture(() => main(["init", "--format", "json"], root));
     assert.equal(result.code, 1);
     assert.equal(result.stderr, "Option --format is not valid for command init\n");
+    assert.equal(existsSync(join(root, "promptsnap.config.json")), false);
+    assert.equal(existsSync(join(root, "prompts")), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("init rejects positional operands before writing files", () => {
+  const root = mkdtempSync(join(tmpdir(), "promptsnap-cli-"));
+  try {
+    const result = capture(() => main(["init", "unexpected"], root));
+    assert.equal(result.code, 1);
+    assert.equal(result.stdout, "");
+    assert.equal(result.stderr, "Command init does not accept positional operands: unexpected\n");
     assert.equal(existsSync(join(root, "promptsnap.config.json")), false);
     assert.equal(existsSync(join(root, "prompts")), false);
   } finally {
