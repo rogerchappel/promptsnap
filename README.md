@@ -75,7 +75,10 @@ Token estimates above `warnTokens` and at or below `maxTokens` are reported as w
 Formats: `text`, `json`, `markdown`.
 
 Command options are strict: `--force` is valid only for `init`, while `--format`
-is valid only for `check`, `update`, and `diff`. Repeated paths and overlapping
+is valid only for `check`, `update`, and `diff`. `--help` and `--version` are
+global, but they do not make an unknown command valid. `init` accepts no
+positional operands and validates the complete invocation before creating files.
+Repeated paths and overlapping
 directory/file inputs are deduplicated, so each source is processed once.
 
 ## CI Example
