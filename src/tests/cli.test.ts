@@ -55,6 +55,13 @@ test("an invalid command cannot be masked by a global version flag", () => {
   assert.equal(result.stderr, "Unknown command: invalid-command\n");
 });
 
+test("an invalid command cannot be masked by a global help flag", () => {
+  const result = capture(() => main(["invalid-command", "--help"], process.cwd()));
+  assert.equal(result.code, 1);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "Unknown command: invalid-command\n");
+});
+
 test("unknown options fail instead of being treated as paths", () => {
   const result = capture(() => main(["check", "--frobnicate"], process.cwd()));
   assert.equal(result.code, 1);
