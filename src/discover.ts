@@ -7,8 +7,13 @@ const ALWAYS_EXCLUDE = new Set([".git", "node_modules", "dist", "coverage"]);
 
 function addSource(root: string, absolute: string, out: Map<string, SourcePrompt>): void {
   const canonical = realpathSync(absolute);
-  if (out.has(canonical)) return;
+  if (!isWithinRoot(root, canonical) || out.has(canonical)) return;
   out.set(canonical, { absolutePath: canonical, relativePath: relativePosix(root, canonical), raw: readFileSync(canonical, "utf8") });
+}
+
+function isWithinRoot(root: string, candidate: string): boolean {
+  const relative = relativePosix(realpathSync(root), candidate);
+  return relative !== ".." && !relative.startsWith("../");
 }
 
 function walk(root: string, dir: string, config: PromptSnapConfig, out: Map<string, SourcePrompt>): void {
@@ -33,6 +38,7 @@ export function discoverSources(root: string, inputs: string[], config: PromptSn
   for (const input of targets) {
     const target = resolve(root, input);
     if (!existsSync(target)) throw new Error(`Input not found: ${input}`);
+    if (!isWithinRoot(root, realpathSync(target))) continue;
     const stats = statSync(target);
     if (stats.isDirectory()) {
       walk(root, target, config, results);
