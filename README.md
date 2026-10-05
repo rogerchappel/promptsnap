@@ -79,7 +79,9 @@ is valid only for `check`, `update`, and `diff`. `--help` and `--version` are
 global, but they do not make an unknown command valid. `init` accepts no
 positional operands and validates the complete invocation before creating files.
 Repeated paths and overlapping
-directory/file inputs are deduplicated, so each source is processed once.
+directory/file inputs are deduplicated, so each source is processed once. Inputs whose
+canonical path resolves outside the project root (including symlinks) are skipped, both
+when explicitly selected and during directory walks.
 
 ## CI Example
 
