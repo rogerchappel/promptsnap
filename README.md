@@ -85,6 +85,10 @@ when explicitly selected and during directory walks.
 
 ## CI Example
 
+CI requires the committed `package-lock.json` and uses `npm ci`; it fails with a
+clear error instead of falling back to an unpinned `npm install` when the lockfile
+is missing. Keep the lockfile committed and update it with `npm install` locally.
+
 ```yaml
 - run: npm ci
 - run: npm run release:check
