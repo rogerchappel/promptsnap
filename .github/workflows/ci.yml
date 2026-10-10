@@ -57,10 +57,10 @@ jobs:
             exit 0
           fi
 
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
+          if [ ! -f package-lock.json ]; then
+            echo "package-lock.json is required for deterministic CI installs."
+            exit 1
           fi
 
+          npm ci
           npm run release:check
