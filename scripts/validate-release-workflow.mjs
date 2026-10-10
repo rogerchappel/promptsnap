@@ -4,6 +4,12 @@ import { readFileSync } from "node:fs";
 const workflow = readFileSync(new URL("../.github/workflows/release.yml", import.meta.url), "utf8");
 const dryRun = readFileSync(new URL("../.github/workflows/release-dry-run.yml", import.meta.url), "utf8");
 
+
+const ci = readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
+assert.match(ci, /package-lock\.json is required for deterministic CI installs\./, "CI must explain that a lockfile is required");
+assert.match(ci, /npm ci/, "CI must use the lockfile-driven installer");
+assert.doesNotMatch(ci, /npm install/, "CI must not fall back to non-deterministic dependency resolution");
+
 const tagCheck = workflow.indexOf('test "$GITHUB_REF_NAME" = "v$package_version"');
 const releaseCheck = workflow.indexOf("npm run release:check");
 const publish = workflow.indexOf("npm publish --provenance --access public");
