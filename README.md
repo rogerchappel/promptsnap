@@ -31,11 +31,14 @@ npm install --save-dev promptsnap
 
 ## Quickstart
 
+From the source checkout created in [Install](#install), run the built CLI directly
+so setup works before the package is published:
+
 ```sh
-npx promptsnap init
-npx promptsnap update prompts
-npx promptsnap check --format markdown
-npx promptsnap diff --format markdown
+node dist/cli.js init
+node dist/cli.js update prompts
+node dist/cli.js check --format markdown
+node dist/cli.js diff --format markdown
 ```
 
 Snapshots are written to `__snapshots__/` by default. Commit snapshot changes alongside intentional prompt changes.
