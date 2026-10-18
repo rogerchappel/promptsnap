@@ -23,6 +23,18 @@ assert(cliCheck > sourceBuild, "README must verify the built CLI");
 assert(afterPublication > cliCheck, "README must reserve registry guidance for post-publication use");
 assert(registryInstall > afterPublication, "README registry install must appear only after its publication qualifier");
 
+const quickstart = readme.match(/## Quickstart\s+([\s\S]*?)\n## /);
+assert(quickstart, "README must contain a Quickstart section");
+assert.match(quickstart[1], /source checkout[\s\S]*node dist\/cli\.js init/, "Quickstart must explain and use the built source CLI");
+assert.doesNotMatch(quickstart[1], /\bnpx\s+promptsnap\b/, "Quickstart must not require the unpublished npm package");
+const quickstartCommands = quickstart[1].match(/^node dist\/cli\.js .+$/gm) ?? [];
+assert.deepEqual(quickstartCommands, [
+  "node dist/cli.js init",
+  "node dist/cli.js update prompts",
+  "node dist/cli.js check --format markdown",
+  "node dist/cli.js diff --format markdown",
+], "Quickstart must list the supported source-checkout commands");
+
 assert.doesNotMatch(
   security,
   /private vulnerability reporting/i,
@@ -45,13 +57,24 @@ assert.deepEqual(documentedCommands, expectedPrdCommands, "PRD CLI sketch must m
 const fixture = mkdtempSync(join(tmpdir(), "promptsnap-prd-"));
 const cli = join(dirname(fileURLToPath(import.meta.url)), "../dist/cli.js");
 try {
+  execFileSync("npm", ["run", "build"], { cwd: dirname(dirname(fileURLToPath(import.meta.url))), stdio: "pipe" });
   mkdirSync(join(fixture, "skills"));
   for (const command of documentedCommands) {
     const args = command.split(/\s+/).slice(1);
     execFileSync(process.execPath, [cli, ...args], { cwd: fixture, stdio: "pipe" });
   }
+  const quickstartFixture = mkdtempSync(join(tmpdir(), "promptsnap-quickstart-"));
+  try {
+    mkdirSync(join(quickstartFixture, "prompts"));
+    for (const command of quickstartCommands) {
+      const args = command.split(/\s+/).slice(2);
+      execFileSync(process.execPath, [cli, ...args], { cwd: quickstartFixture, stdio: "pipe" });
+    }
+  } finally {
+    rmSync(quickstartFixture, { recursive: true, force: true });
+  }
 } finally {
   rmSync(fixture, { recursive: true, force: true });
 }
 
-console.log("Pre-release, security, and executable PRD guidance are ready.");
+console.log("Pre-release, security, and executable README/PRD guidance are ready.");
