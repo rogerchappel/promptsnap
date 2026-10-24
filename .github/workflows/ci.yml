@@ -19,6 +19,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
+      - name: Set up Node.js
+        if: ${{ hashFiles('package.json') != '' }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
       - name: Validate required project files
         run: |
           set -euo pipefail
