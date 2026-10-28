@@ -69,4 +69,10 @@ jobs:
           fi
 
           npm ci
-          npm run release:check
+          npm run check
+          npm run build
+          npm test
+          npm run smoke
+          npm run package:smoke
+          npm run release:docs
+          npm run release:workflow
