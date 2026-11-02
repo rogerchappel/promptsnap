@@ -10,3 +10,8 @@ test("estimates tokens deterministically", () => {
 test("uses character floor for long packed strings", () => {
   assert.equal(estimateTokens("a".repeat(80)), 20);
 });
+
+test("counts non-BMP characters as one code point", () => {
+  assert.equal(estimateTokens("😀".repeat(8)), 2);
+  assert.equal(estimateTokens("a😀b"), 2);
+});
