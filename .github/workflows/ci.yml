@@ -19,12 +19,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Set up Node.js
-        if: ${{ hashFiles('package.json') != '' }}
-        uses: actions/setup-node@v7
-        with:
-          node-version: '20'
-
       - name: Validate required project files
         run: |
           set -euo pipefail
@@ -54,25 +48,34 @@ jobs:
             exit 1
           fi
 
-      - name: Run optional Node checks
+  node-checks:
+    name: Node ${{ matrix.node-version }} checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22, 24]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Validate package lockfile
         run: |
           set -euo pipefail
-
-          if [ ! -f package.json ]; then
-            echo "No package.json found; skipping Node checks."
-            exit 0
-          fi
-
           if [ ! -f package-lock.json ]; then
-            echo "package-lock.json is required for deterministic CI installs."
+            echo "package-lock.json is required for deterministic CI installs." >&2
             exit 1
           fi
 
-          npm ci
-          npm run check
-          npm run build
-          npm test
-          npm run smoke
-          npm run package:smoke
-          npm run release:docs
-          npm run release:workflow
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run release checks
+        run: npm run release:check
