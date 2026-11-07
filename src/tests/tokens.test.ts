@@ -15,3 +15,7 @@ test("counts non-BMP characters as one code point", () => {
   assert.equal(estimateTokens("😀".repeat(8)), 2);
   assert.equal(estimateTokens("a😀b"), 2);
 });
+
+test("does not subtract separated emoji from unrelated word tokens", () => {
+  assert.equal(estimateTokens("alpha 😀 beta"), 3);
+});
