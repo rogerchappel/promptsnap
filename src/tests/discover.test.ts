@@ -16,6 +16,20 @@ function fixture() {
   return { root, outside };
 }
 
+test("matches globstar patterns across nested paths and path separators", () => {
+  const { root } = fixture();
+  mkdirSync(join(root, "prompts", "nested"), { recursive: true });
+  writeFileSync(join(root, "prompts", "root.md"), "root prompt\n");
+  writeFileSync(join(root, "prompts", "nested", "child.md"), "nested prompt\n");
+  writeFileSync(join(root, "prompts", "nested", "ignore.txt"), "not a prompt\n");
+  const config = { ...defaultConfig, include: ["prompts/**/*.md"] };
+
+  assert.deepEqual(
+    discoverSources(root, [], config).map((source) => source.relativePath),
+    ["prompts/nested/child.md", "prompts/root.md"],
+  );
+});
+
 test("skips explicit traversal and symlink inputs outside the project", () => {
   const { root } = fixture();
   assert.deepEqual(discoverSources(root, ["../outside.md", "linked.md"], defaultConfig), []);
