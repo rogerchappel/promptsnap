@@ -28,7 +28,7 @@
     "package:smoke": "bash scripts/package-smoke.sh",
     "release:docs": "node scripts/validate-readiness-docs.mjs",
     "release:workflow": "node scripts/validate-release-workflow.mjs",
-    "release:check": "npm run check && npm run build && npm test && npm run smoke && npm run package:smoke && npm run release:docs && npm run release:workflow"
+    "release:check": "npm run check && npm run build && npm test && npm run smoke && npm run package:smoke && npm run release:docs && npm run release:workflow && node --test scripts/validate-readiness-docs.test.mjs scripts/validate-release-workflow.test.mjs"
   },
   "keywords": [
     "prompt",
