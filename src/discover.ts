@@ -44,7 +44,7 @@ export function discoverSources(root: string, inputs: string[], config: PromptSn
       walk(root, target, config, results);
     } else if (stats.isFile()) {
       const relative = relativePosix(root, target);
-      if (!matchesAny(relative, config.exclude)) {
+      if (!matchesAny(relative, config.exclude) && matchesAny(relative, config.include)) {
         addSource(root, target, results);
       }
     }
