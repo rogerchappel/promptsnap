@@ -39,3 +39,15 @@ test("directory walks skip symlinks that resolve outside the project", () => {
   const { root } = fixture();
   assert.deepEqual(discoverSources(root, [], defaultConfig), []);
 });
+
+
+test("explicit files must match include patterns", () => {
+  const { root } = fixture();
+  mkdirSync(join(root, "prompts"));
+  writeFileSync(join(root, "prompts", "included.md"), "included prompt\n");
+  writeFileSync(join(root, "notes.md"), "not included\n");
+  const config = { ...defaultConfig, include: ["prompts/**/*.md"] };
+
+  assert.deepEqual(discoverSources(root, ["notes.md"], config), []);
+  assert.deepEqual(discoverSources(root, ["prompts/included.md"], config).map((source) => source.relativePath), ["prompts/included.md"]);
+});
