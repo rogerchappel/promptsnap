@@ -51,3 +51,10 @@ test("explicit files must match include patterns", () => {
   assert.deepEqual(discoverSources(root, ["notes.md"], config), []);
   assert.deepEqual(discoverSources(root, ["prompts/included.md"], config).map((source) => source.relativePath), ["prompts/included.md"]);
 });
+
+test("explicit files matching include patterns still exclude outside-root symlinks", () => {
+  const { root } = fixture();
+  const config = { ...defaultConfig, include: ["**/*.md"] };
+
+  assert.deepEqual(discoverSources(root, ["linked.md"], config), []);
+});
