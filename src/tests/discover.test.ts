@@ -40,6 +40,16 @@ test("directory walks skip symlinks that resolve outside the project", () => {
   assert.deepEqual(discoverSources(root, [], defaultConfig), []);
 });
 
+test("directory walks do not recurse through symlinked directories outside the project", () => {
+  const { root, outside } = fixture();
+  const outsideDir = join(root, "..", "external-prompts");
+  mkdirSync(outsideDir);
+  writeFileSync(join(outsideDir, "secret.md"), "private prompt\n");
+  symlinkSync(outsideDir, join(root, "external"), "dir");
+
+  assert.deepEqual(discoverSources(root, [], { ...defaultConfig, include: ["**/*.md"] }), []);
+});
+
 
 test("explicit files must match include patterns", () => {
   const { root } = fixture();
