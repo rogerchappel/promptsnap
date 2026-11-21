@@ -30,9 +30,14 @@ test("matches globstar patterns across nested paths and path separators", () => 
   );
 });
 
-test("skips explicit traversal and symlink inputs outside the project", () => {
+test("rejects explicit traversal outside the project", () => {
   const { root } = fixture();
-  assert.deepEqual(discoverSources(root, ["../outside.md", "linked.md"], defaultConfig), []);
+  assert.throws(() => discoverSources(root, ["../outside.md"], defaultConfig), /Input outside project root: \.\.\/outside\.md/);
+});
+
+test("rejects explicit symlink inputs outside the project", () => {
+  const { root } = fixture();
+  assert.throws(() => discoverSources(root, ["linked.md"], defaultConfig), /Input outside project root: linked\.md/);
 });
 
 test("directory walks skip symlinks that resolve outside the project", () => {
@@ -62,9 +67,9 @@ test("explicit files must match include patterns", () => {
   assert.deepEqual(discoverSources(root, ["prompts/included.md"], config).map((source) => source.relativePath), ["prompts/included.md"]);
 });
 
-test("explicit files matching include patterns still exclude outside-root symlinks", () => {
+test("explicit files matching include patterns still reject outside-root symlinks", () => {
   const { root } = fixture();
   const config = { ...defaultConfig, include: ["**/*.md"] };
 
-  assert.deepEqual(discoverSources(root, ["linked.md"], config), []);
+  assert.throws(() => discoverSources(root, ["linked.md"], config), /Input outside project root: linked\.md/);
 });

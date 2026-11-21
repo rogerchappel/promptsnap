@@ -38,7 +38,7 @@ export function discoverSources(root: string, inputs: string[], config: PromptSn
   for (const input of targets) {
     const target = resolve(root, input);
     if (!existsSync(target)) throw new Error(`Input not found: ${input}`);
-    if (!isWithinRoot(root, realpathSync(target))) continue;
+    if (!isWithinRoot(root, realpathSync(target))) throw new Error(`Input outside project root: ${input}`);
     const stats = statSync(target);
     if (stats.isDirectory()) {
       walk(root, target, config, results);
