@@ -8,9 +8,8 @@ Prompt changes can quietly alter behavior contracts. `promptsnap` gives local-fi
 
 ## Install
 
-The npm package is not published yet and is not currently available from the
-npm registry. Until a release makes it available, clone the repository and build
-the CLI from source:
+The npm package is not published yet. It is not currently available from the
+npm registry, so clone the repository and build the CLI from source:
 
 ```sh
 git clone https://github.com/rogerchappel/promptsnap.git
