@@ -8,8 +8,9 @@ Prompt changes can quietly alter behavior contracts. `promptsnap` gives local-fi
 
 ## Install
 
-The npm package is not currently published to npm. Clone the repository and
-build the CLI from source:
+The npm package is not published yet and is not currently available from the
+npm registry. Until a release makes it available, clone the repository and build
+the CLI from source:
 
 ```sh
 git clone https://github.com/rogerchappel/promptsnap.git
@@ -23,7 +24,7 @@ The final command runs the built CLI directly and prints its usage. You can use
 `node dist/cli.js` in place of `promptsnap` in the examples below while working
 from a source checkout.
 
-Once the package is available on npm, install it in another project with:
+After the package is published to npm, install it in another project with:
 
 ```sh
 npm install --save-dev promptsnap
